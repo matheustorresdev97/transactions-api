@@ -1,0 +1,31 @@
+spring:
+  # Dados de conexão com o banco H2
+  datasource:
+    driverClassName: org.h2.Driver
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: ""
+  
+  # H2 Client
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  # JPA, SQL
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    # Configuração para o Hibernate não criar ou alterar tabelas automaticamente
+    hibernate:
+      ddl-auto: none
+  
+  # Configurações do Flyway
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
