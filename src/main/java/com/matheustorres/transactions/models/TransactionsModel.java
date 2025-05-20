@@ -25,6 +25,9 @@ public class TransactionsModel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "session_id")
+    private UUID sessionId;
+
     @Column(name = "title", nullable = false)
     private String title;
 
