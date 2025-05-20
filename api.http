@@ -1,0 +1,13 @@
+### Variáveis de ambiente
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### Criar uma transação de crédito
+POST {{baseUrl}}/transactions
+Content-Type: {{contentType}}
+
+{
+  "title": "Pagamento de salário",
+  "amount": 3000.00,
+  "type": "credit"
+}
