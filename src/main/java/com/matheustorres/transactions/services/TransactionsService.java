@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.matheustorres.transactions.dtos.CreateTransactionDTO;
 import com.matheustorres.transactions.dtos.TransactionResponseDTO;
+import com.matheustorres.transactions.dtos.TransactionSummaryDTO;
 import com.matheustorres.transactions.enums.TransactionType;
 import com.matheustorres.transactions.exceptions.ResourceNotFoundException;
 import com.matheustorres.transactions.models.TransactionsModel;
@@ -51,6 +52,16 @@ public class TransactionsService {
                 .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada com o ID: " + id));
 
         return convertToDTO(transaction);
+    }
+
+    public TransactionSummaryDTO getSummary() {
+        List<TransactionsModel> transactions = transactionsRepository.findAll();
+
+        BigDecimal totalAmount = transactions.stream()
+                .map(TransactionsModel::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new TransactionSummaryDTO(totalAmount);
     }
 
     private TransactionResponseDTO convertToDTO(TransactionsModel transaction) {

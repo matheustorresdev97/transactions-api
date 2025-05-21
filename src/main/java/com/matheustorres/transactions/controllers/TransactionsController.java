@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.matheustorres.transactions.dtos.CreateTransactionDTO;
 import com.matheustorres.transactions.dtos.TransactionResponseDTO;
+import com.matheustorres.transactions.dtos.TransactionSummaryDTO;
 import com.matheustorres.transactions.exceptions.InvalidTransactionException;
 import com.matheustorres.transactions.exceptions.TransactionCreationException;
 import com.matheustorres.transactions.services.TransactionsService;
@@ -58,6 +59,16 @@ public class TransactionsController {
             return ResponseEntity.ok(transaction);
         } catch (Exception e) {
             throw new RuntimeException("Erro ao buscar transação: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<TransactionSummaryDTO> getSummary() {
+        try {
+            TransactionSummaryDTO summary = transactionsService.getSummary();
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao calcular o resumo das transações: " + e.getMessage());
         }
     }
 }
