@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.matheustorres.transactions.enums.TransactionType;
 
-public record TranscationResponseDTO(
+public record TransactionResponseDTO(
         UUID id,
         String title,
         BigDecimal amount,

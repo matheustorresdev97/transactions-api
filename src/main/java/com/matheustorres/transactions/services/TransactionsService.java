@@ -1,13 +1,17 @@
 package com.matheustorres.transactions.services;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.matheustorres.transactions.dtos.CreateTransactionDTO;
-import com.matheustorres.transactions.dtos.TranscationResponseDTO;
+import com.matheustorres.transactions.dtos.TransactionResponseDTO;
 import com.matheustorres.transactions.enums.TransactionType;
+import com.matheustorres.transactions.exceptions.ResourceNotFoundException;
 import com.matheustorres.transactions.models.TransactionsModel;
 import com.matheustorres.transactions.repositories.TransactionsRepository;
 
@@ -17,7 +21,7 @@ public class TransactionsService {
     @Autowired
     private TransactionsRepository transactionsRepository;
 
-    public TranscationResponseDTO createTransaction(CreateTransactionDTO createTransactionDTO) {
+    public TransactionResponseDTO createTransaction(CreateTransactionDTO createTransactionDTO) {
 
         BigDecimal finalAmount = BigDecimal.valueOf(createTransactionDTO.amount());
         if (createTransactionDTO.type() == TransactionType.debit) {
@@ -35,7 +39,21 @@ public class TransactionsService {
 
     }
 
-    private TranscationResponseDTO convertToDTO(TransactionsModel transaction) {
+    public List<TransactionResponseDTO> getAllTransactions() {
+        List<TransactionsModel> transactions = transactionsRepository.findAll();
+        return transactions.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public TransactionResponseDTO getTransactionById(UUID id) {
+        TransactionsModel transaction = transactionsRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada com o ID: " + id));
+
+        return convertToDTO(transaction);
+    }
+
+    private TransactionResponseDTO convertToDTO(TransactionsModel transaction) {
         TransactionType type = transaction.getAmount().compareTo(BigDecimal.ZERO) >= 0
                 ? TransactionType.credit
                 : TransactionType.debit;
@@ -44,7 +62,7 @@ public class TransactionsService {
                 ? transaction.getAmount().abs()
                 : transaction.getAmount();
 
-        return new TranscationResponseDTO(
+        return new TransactionResponseDTO(
                 transaction.getId(),
                 transaction.getTitle(),
                 displayAmount,
