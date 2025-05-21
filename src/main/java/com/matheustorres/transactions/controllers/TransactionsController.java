@@ -18,10 +18,10 @@ import com.matheustorres.transactions.dtos.CreateTransactionDTO;
 import com.matheustorres.transactions.dtos.TransactionResponseDTO;
 import com.matheustorres.transactions.dtos.TransactionSummaryDTO;
 import com.matheustorres.transactions.exceptions.InvalidTransactionException;
+import com.matheustorres.transactions.exceptions.ResourceNotFoundException;
 import com.matheustorres.transactions.exceptions.TransactionCreationException;
 import com.matheustorres.transactions.services.TransactionsService;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -37,6 +37,7 @@ public class TransactionsController {
     @PostMapping
     public ResponseEntity<TransactionResponseDTO> createTransaction(
             @Valid @RequestBody CreateTransactionDTO createTransactionDTO,
+            HttpServletRequest request,
             HttpServletResponse response) {
         try {
             if (!createTransactionDTO.isValidType()) {
@@ -44,33 +45,48 @@ public class TransactionsController {
             }
 
             TransactionResponseDTO transactionResponse = transactionsService.createTransaction(
-                    createTransactionDTO, response);
+                    createTransactionDTO, request, response);
             return ResponseEntity.status(HttpStatus.CREATED).body(transactionResponse);
+        } catch (InvalidTransactionException e) {
+            throw e;
         } catch (Exception e) {
-            throw new TransactionCreationException("Não foi possível criar a tarefa");
+            throw new TransactionCreationException("Não foi possível criar a transação");
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactions() {
-        List<TransactionResponseDTO> transactions = transactionsService.getAllTransactions();
-        return ResponseEntity.ok(transactions);
+    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactions(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        try {
+            List<TransactionResponseDTO> transactions = transactionsService.getAllTransactions(request, response);
+            return ResponseEntity.ok(transactions);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao buscar transações: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionResponseDTO> getTransactionById(@PathVariable UUID id) {
+    public ResponseEntity<TransactionResponseDTO> getTransactionById(
+            @PathVariable UUID id,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         try {
-            TransactionResponseDTO transaction = transactionsService.getTransactionById(id);
+            TransactionResponseDTO transaction = transactionsService.getTransactionById(id, request, response);
             return ResponseEntity.ok(transaction);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             throw new RuntimeException("Erro ao buscar transação: " + e.getMessage());
         }
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<TransactionSummaryDTO> getSummary() {
+    public ResponseEntity<TransactionSummaryDTO> getSummary(
+            HttpServletRequest request,
+            HttpServletResponse response) {
         try {
-            TransactionSummaryDTO summary = transactionsService.getSummary();
+            TransactionSummaryDTO summary = transactionsService.getSummary(request, response);
             return ResponseEntity.ok(summary);
         } catch (Exception e) {
             throw new RuntimeException("Erro ao calcular o resumo das transações: " + e.getMessage());
