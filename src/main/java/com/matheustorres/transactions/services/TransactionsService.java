@@ -16,23 +16,38 @@ import com.matheustorres.transactions.exceptions.ResourceNotFoundException;
 import com.matheustorres.transactions.models.TransactionsModel;
 import com.matheustorres.transactions.repositories.TransactionsRepository;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+
 @Service
 public class TransactionsService {
 
     @Autowired
     private TransactionsRepository transactionsRepository;
 
-    public TransactionResponseDTO createTransaction(CreateTransactionDTO createTransactionDTO) {
+    public TransactionResponseDTO createTransaction(CreateTransactionDTO createTransactionDTO,
+            HttpServletResponse response) {
 
         BigDecimal finalAmount = BigDecimal.valueOf(createTransactionDTO.amount());
         if (createTransactionDTO.type() == TransactionType.debit) {
             finalAmount = finalAmount.negate();
         }
 
+        UUID sessionId = UUID.randomUUID();
+
+        Cookie sessionCookie = new Cookie("sessionId", sessionId.toString());
+        sessionCookie.setHttpOnly(true);
+        sessionCookie.setSecure(false); // true se estiver em produção com HTTPS
+        sessionCookie.setPath("/");
+        sessionCookie.setMaxAge(7 * 24 * 60 * 60); // 7 dias
+
+        response.addCookie(sessionCookie);
+
         TransactionsModel transaction = new TransactionsModel();
 
         transaction.setTitle(createTransactionDTO.title());
         transaction.setAmount(finalAmount);
+        transaction.setSessionId(sessionId);
 
         transaction = transactionsRepository.save(transaction);
 

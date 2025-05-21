@@ -21,6 +21,9 @@ import com.matheustorres.transactions.exceptions.InvalidTransactionException;
 import com.matheustorres.transactions.exceptions.TransactionCreationException;
 import com.matheustorres.transactions.services.TransactionsService;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*")
@@ -33,13 +36,15 @@ public class TransactionsController {
 
     @PostMapping
     public ResponseEntity<TransactionResponseDTO> createTransaction(
-            @Valid @RequestBody CreateTransactionDTO createTransactionDTO) {
+            @Valid @RequestBody CreateTransactionDTO createTransactionDTO,
+            HttpServletResponse response) {
         try {
             if (!createTransactionDTO.isValidType()) {
                 throw new InvalidTransactionException("O tipo da transação deve ser 'credit' ou 'debit'");
             }
 
-            TransactionResponseDTO transactionResponse = transactionsService.createTransaction(createTransactionDTO);
+            TransactionResponseDTO transactionResponse = transactionsService.createTransaction(
+                    createTransactionDTO, response);
             return ResponseEntity.status(HttpStatus.CREATED).body(transactionResponse);
         } catch (Exception e) {
             throw new TransactionCreationException("Não foi possível criar a tarefa");

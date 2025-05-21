@@ -13,7 +13,7 @@ public record CreateTransactionDTO(
         @NotNull(message = "O tipo é obrigatório") TransactionType type) {
 
     public boolean isValidType() {
-       return type == TransactionType.credit || type == TransactionType.debit;
+        return type == TransactionType.credit || type == TransactionType.debit;
     }
 
 }
